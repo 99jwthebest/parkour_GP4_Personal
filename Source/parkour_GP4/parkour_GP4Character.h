@@ -85,7 +85,26 @@ protected:
 	void CheckIfHitSurface();
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void CheckShouldContinueSliding();
+	float FindCurrentFloorAngleAndDirection();
+	bool IsSlopeUp();
+	void PlayGettingUpEvent();
+	void ContinueSliding();
+	void ResetXYRotation();
 
+
+	/******   *******
+	**   Vaulting   **
+	******   *******/
+	void Vaulting();
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void VaultTrace(float InitialTraceLength, float SecondaryTraceZOffset, float SecondaryTraceGap, float LandingPositionForwardOffset);
+	void Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance);
+
+
+	/******   *******
+	**   Mantling   **
+	******   *******/
+	void MantleTrace(float InitialTraceLength, float SecondaryTraceZOffset, float FallingHeightMultiplier);
 
 protected:
 	// APawn interface

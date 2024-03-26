@@ -175,7 +175,7 @@ void Aparkour_GP4Character::Slide()
 			/*GetCapsuleComponent()->SetCapsuleHalfHeight();
 				GetCapsuleComponent()->SetCapsuleRadius();*/
 
-			FVector StartPoint(55.0f, -70.0f, -71.0f);
+			FVector StartPoint(55.0f, -70.0f, -71.0f);  // this doesn't work lol
 			MeshP->SetRelativeLocation(StartPoint);
 
 			FRotator StartRot(30.0f, 40.0f, 360.0f);
@@ -206,22 +206,24 @@ void Aparkour_GP4Character::Slide()
 		}
 	}
 }
+
 void Aparkour_GP4Character::TraceFloorWhileSliding()
 {
 	CheckIfOnFloor();
-	//if (ContinueSlidingHandle.IsValid())
-	//{
-	//	GetWorld()->GetTimerManager().ClearTimer(ContinueSlidingHandle); // this might not work
-	//	GetCharacterMovement()->UnCrouch();
-	//	UE_LOG(LogTemp, Warning, TEXT("6ContinueSlidingHandle.IsValid()!!!"))
-	//		//ResetXYRotation();
-	//}
-	//else
-	//{
-	//	GetCharacterMovement()->UnCrouch();
-	//	UE_LOG(LogTemp, Warning, TEXT("6 False... ContinueSlidingHandle.IsValid()!!!"))
-	//		//ResetXYRotation();
-	//}
+	GetWorld()->GetTimerManager().ClearTimer(SlideTraceHandle); // this might not work
+	if (ContinueSlidingHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ContinueSlidingHandle); // this might not work
+		GetCharacterMovement()->UnCrouch();
+		UE_LOG(LogTemp, Warning, TEXT("6ContinueSlidingHandle.IsValid()!!!"))
+		ResetXYRotation();
+	}
+	else
+	{
+		GetCharacterMovement()->UnCrouch();
+		UE_LOG(LogTemp, Warning, TEXT("6 False... ContinueSlidingHandle.IsValid()!!!"))
+		ResetXYRotation();
+	}
 	AlignPlayerToFloor();
 	CheckIfHitSurface();
 }
@@ -336,8 +338,8 @@ void Aparkour_GP4Character::CheckIfHitSurface()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("12CheckIfHitSurface... AbsoluteArcCosDegrees > CompareAngle True!!!"))
 			GetWorld()->GetTimerManager().ClearTimer(SlideTraceHandle); // this might not work
-			//GetWorld()->GetTimerManager().ClearTimer(ContinueSlidingHandle); // this might not work
-			//PlayGettingUpEvent();
+			GetWorld()->GetTimerManager().ClearTimer(ContinueSlidingHandle); // this might not work
+			PlayGettingUpEvent();
 		}
 		else
 		{
@@ -355,12 +357,12 @@ void Aparkour_GP4Character::CheckShouldContinueSliding()
 {
 	UE_LOG(LogTemp, Warning, TEXT("17CheckShouldContinueSliding!!!"))
 
-	/*if (IsSliding)
+	if (IsSliding)
 	{
 		if (IsSlopeUp())
 		{
 			GetCharacterMovement()->Velocity = CurrentSlidingVelocity;
-			GetWorld()->GetTimerManager().SetTimer(ContinueSlidingHandle, this, &AfreeRunning_GP_4Character::ContinueSliding, 0.001f, true);
+			GetWorld()->GetTimerManager().SetTimer(ContinueSlidingHandle, this, &Aparkour_GP4Character::ContinueSliding, 0.001f, true);
 
 			CurrentAngle = FindCurrentFloorAngleAndDirection();
 		}
@@ -368,12 +370,382 @@ void Aparkour_GP4Character::CheckShouldContinueSliding()
 		{
 			PlayGettingUpEvent();
 		}
-	}*/
+	}
 }
 
 
 
+/// <summary>
+/// Finds the current floors angle using math and if the current floor is sloping upwards or downwards based on the direction the player is sliding on it.
+/// </summary>
+/// <returns>Floor Angle</returns>
+float Aparkour_GP4Character::FindCurrentFloorAngleAndDirection()
+{
+	FVector offsetZ(0.0f, 0.0f, 1.0f);
+	float DotProduct = GetCharacterMovement()->CurrentFloor.HitResult.Normal.Dot(offsetZ);
+
+	// Calculate the arc cosine of the dot product
+	float ArcCosValue = FMath::Acos(DotProduct);
+
+	// Convert from radians to degrees
+	float ArcCosDegrees = FMath::RadiansToDegrees(ArcCosValue);
+
+	//IsSlopeUp();
+
+	return ArcCosDegrees;
+}
+
+bool Aparkour_GP4Character::IsSlopeUp()
+{
+
+	FRotator MakeRotFromXY(GetCharacterMovement()->CurrentFloor.HitResult.Normal.X, GetActorForwardVector().Y, 0.0f);
+	float MultiplyXY = MakeRotFromXY.Roll * MakeRotFromXY.Pitch;
+
+	if (MultiplyXY > 0.0f)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void Aparkour_GP4Character::PlayGettingUpEvent()
+{
+	UE_LOG(LogTemp, Warning, TEXT("14PlayGettingUpEvent!!!"))
+
+	MeshP->GetAnimInstance()->Montage_Play(SlidingEndMontage); // playGettingup montage event
+	FLatentActionInfo FLatentInfo;
+	UKismetSystemLibrary::RetriggerableDelay(GetWorld(), 0.02f, FLatentInfo); // might not work
+
+	if (SlideTraceHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(SlideTraceHandle); // this might not work
+		UE_LOG(LogTemp, Warning, TEXT("15PlayGettingUpEvent... MyTimerHandleSliding.IsValid() True!!!"))
+	}
+	GetCharacterMovement()->UnCrouch(); // this area might not work.
+
+	ResetXYRotation();
+	UE_LOG(LogTemp, Warning, TEXT("16PlayGettingUpEvent!!!"))
+}
+
+void Aparkour_GP4Character::ContinueSliding()
+{
+	CurrentAngle = FindCurrentFloorAngleAndDirection();
+
+	float InterpFloat = FMath::FInterpTo(CurrentAngle, FindCurrentFloorAngleAndDirection(), GetWorld()->GetDeltaSeconds(), 0.4f);
+
+	// Use the FinterpTo return value if you want a smoother check. Use CurrrentAngle for a sharper stopping.
+	if (InterpFloat < 3.0f) // might not work, might need to be changed to greater than.
+	{
+		if (UKismetMathLibrary::VSize(GetCharacterMovement()->Velocity) < SpeedToStopSliding)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(ContinueSlidingHandle); // this might not work
+			PlayGettingUpEvent();
+		}
+	}
+	else 
+	{
+		AddMovementInput(UKismetMathLibrary::GetForwardVector(FRotator(0.0f, 0.0f, GetActorRotation().Yaw)));
+		GetCharacterMovement()->MaxWalkSpeed = 1500.0f; /// speed you want the player to slide at.
+		GetCharacterMovement()->MaxAcceleration = 500.0f; // for how slow or fast the player speeds up.
+
+		CheckIfHitSurface();
+		
+	}
+
+}
 
 
 
-#pragma endregion 
+/// <summary>
+/// Reset the players rotation once sliding finishes.
+/// </summary>
+void Aparkour_GP4Character::ResetXYRotation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("7ResetXYRotation!!!"))
+
+	FRotator DefaultYawRotation(0.0f, 0.0f, GetActorRotation().Yaw);
+	// Timeline Equivalent - ResetSlideRotation.
+
+	float deltaTime = GetWorld()->GetDeltaSeconds();
+
+	float InterpSpeed = 5.0f;
+
+	FRotator interpRotate = FMath::RInterpTo(GetActorRotation(), DefaultYawRotation, deltaTime, InterpSpeed);
+
+	SetActorRotation(interpRotate);
+
+	GetCharacterMovement()->MaxWalkSpeed = 500.0f; /// speed you want the player to slide at.
+	GetCharacterMovement()->MaxAcceleration = 1500.0f; // for how slow or fast the player speeds up.
+}
+
+
+#pragma endregion
+
+
+#pragma region Vaulting
+
+void Aparkour_GP4Character::Vaulting()
+{
+	if (UKismetMathLibrary::VSize(GetCharacterMovement()->Velocity) > 450.0f && !GetCharacterMovement()->IsFalling())
+	{
+		VaultTrace(380.0f, 100.0f, 45.0f, 100.0f);
+
+		if (CanVault)
+		{
+			Vault(VaultStartLocation, VaultMiddleLocation, VaultLandLocation, VaultDistance);
+		}
+	}
+
+}
+
+void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float SecondaryTraceZOffset, float SecondaryTraceGap, float LandingPositionForwardOffset)
+{
+
+	/*
+		Do a line trace to trace for the object to vault over. If an object is found, the script continues to find the target locations.
+		Vault distance is set to 0 so it can be incremented to find the vaulting distance and play different montages based on it.
+	*/
+
+	FVector StartVector = GetActorLocation();
+
+	FVector MultipliedVector = GetActorForwardVector() * InitialTraceLength;
+
+	FVector EndVector = GetActorLocation() + MultipliedVector;
+
+	FHitResult OutHit;
+	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_Visibility); // Trace channel to use
+	TArray<AActor*> ActorsArray;
+	//EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForDuration;
+	bool bSingleHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartVector, EndVector, TraceChannel, false, ActorsArray, EDrawDebugTrace::ForDuration, OutHit, true);
+
+	if (bSingleHit)
+	{
+		VaultDistance = 0;
+		for (int i = 0; i < 10; i++)
+		{
+			/*
+			* Sphere Traces used to determine the length of the object and height.
+			*/
+
+			VaultDistance++;
+			FVector MultiVector = GetActorForwardVector() * i * SecondaryTraceGap;
+			FVector HitLocation = OutHit.Location + MultiVector;
+			FVector AddedVector = HitLocation + (0.0f, 0.0f, SecondaryTraceZOffset);
+			TArray<AActor*> ActorsArray2;
+			FHitResult OutHit2;
+
+			bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddedVector, HitLocation, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::ForDuration, OutHit2, true);
+
+			if (bSphereHit)
+			{
+				if (i == 0)
+				{
+					/*
+					* If it is the first/initial trace then the vault starting location is set and a sphere trace is used to check if there is anything blocking so the vault can be cancelled if there is.
+					*/
+
+					VaultStartLocation = OutHit2.ImpactPoint;
+					FVector AddToVaultStartVector = VaultStartLocation + (0.0f, 0.0f, 20.0f);
+					TArray<AActor*> ActorsArray3;
+					FHitResult OutHit3;
+
+					bool bSphereHit2 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddToVaultStartVector, AddToVaultStartVector, 10.0f, TraceChannel, false, ActorsArray3, EDrawDebugTrace::ForDuration, OutHit3, true, FLinearColor::Blue);
+					if (bSphereHit2)
+					{
+						CanVault = false;
+						break;
+					}
+				}
+				else
+				{
+
+					/*
+					* if the Trace is not the initial one then the vault middle/height location is set by setting it every time a trace is done, making the final trace the target middle location.
+					*/
+
+					VaultMiddleLocation = OutHit2.ImpactPoint;
+					FVector AddToVaultStartVector = VaultStartLocation + (0.0f, 0.0f, 20.0f);
+					TArray<AActor*> ActorsArray4;
+					FHitResult OutHit4;
+
+					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), OutHit2.TraceStart, OutHit2.TraceStart, 10.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::ForDuration, OutHit4, true, FLinearColor::Blue);
+					if (bSphereHit3)
+					{
+						CanVault = false;
+					}
+				}
+			}
+			else
+			{
+				CanVault = true;
+
+				/*
+				* Find the landing location by doing a line trace downwards from an offset so it is not directly tracing down to the object but to the floor.
+				*/
+
+				FHitResult OutHit5;
+				TArray<AActor*> ActorsArray5;
+
+				FVector MultiplyForwardVector = GetActorForwardVector() * LandingPositionForwardOffset;
+
+				FVector StartTraceEndAddVector = OutHit2.TraceEnd + MultiplyForwardVector;
+
+				FVector EndTraceEndAddVector = StartTraceEndAddVector - (0.0f, 0.0f, 100.0f);
+
+				bool bSingleHit4 = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartTraceEndAddVector, EndTraceEndAddVector, TraceChannel, false, ActorsArray5, EDrawDebugTrace::ForDuration, OutHit5, true);
+
+				TArray<AActor*> ActorsArray6;
+				FHitResult OutHit6;
+				bool bSphereHit5 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), StartTraceEndAddVector, StartTraceEndAddVector, 20.0f, TraceChannel, false, ActorsArray6, EDrawDebugTrace::ForDuration, OutHit6, true, FLinearColor::Blue);
+
+				if (bSphereHit5)
+				{
+					CanVault = false;
+				}
+				else
+				{
+					VaultLandLocation = OutHit5.Location;
+
+				}
+
+				break;
+			}
+		}
+	}
+}
+
+void Aparkour_GP4Character::Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance)
+{
+	CanVault = false;
+
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+}
+
+#pragma endregion
+
+
+
+void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float SecondaryTraceZOffset, float FallingHeightMultiplier)
+{
+	CanMantle = false;
+
+	/*
+		Trace to check for an object.
+	*/
+
+	FVector StartVector = GetActorLocation();
+	FVector MultipliedVector = GetActorForwardVector() * InitialTraceLength;
+	FVector EndVector = GetActorLocation() + MultipliedVector;
+
+	FHitResult OutHit;
+	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_Visibility); // Trace channel to use
+	TArray<AActor*> ActorsArray;
+	//EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForDuration;
+	bool bSingleHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartVector, EndVector, TraceChannel, false, ActorsArray, EDrawDebugTrace::ForDuration, OutHit, true);
+
+	if (bSingleHit)
+	{
+		/*
+			If an object is found then trace for the object height. If player is falling then the maximum reachable height is lowered.
+		*/
+
+		float SelectedFloat = UKismetMathLibrary::SelectFloat(FallingHeightMultiplier, 1.0f, GetCharacterMovement()->IsFalling());
+		float Multiplingfloat = SecondaryTraceZOffset * SelectedFloat;
+		FVector StartVectorForSphere = OutHit.Location + (0.0f, 0.0f, Multiplingfloat);
+
+		TArray<AActor*> ActorsArray2;
+		FHitResult OutHit2;
+
+		bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), StartVectorForSphere, OutHit.Location, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::ForDuration, OutHit2, true);
+		if (bSphereHit)
+		{
+
+			/*
+				Find the positions to motion warp to using the detected points from the trace.
+			*/
+			MantlePosition1 = OutHit2.ImpactPoint + (GetActorForwardVector() * -50.0f);
+			MantlePosition2 = (GetActorForwardVector() * 120.0f) + OutHit2.ImpactPoint;
+
+
+			CanMantle = true;
+
+			FVector VectorForSphereTrace = MantlePosition2 + (0.0f, 0.0f, 20.0f);
+			TArray<AActor*> ActorsArray3;
+			FHitResult OutHit3;
+
+			/*
+				Do a sphere trace to check if the player has enough space to land at the target location once mantled. This deduces the second motion warp location.
+			*/
+			bool bSphereHit2 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), VectorForSphereTrace, VectorForSphereTrace, 10.0f, TraceChannel, false, ActorsArray3, EDrawDebugTrace::ForDuration, OutHit3, true);
+			if (bSphereHit2)
+			{
+				CanMantle = false;
+
+				if (MantlePosition1 == FVector(0.0f, 0.0f, 0.0f) || MantlePosition2 == FVector(0.0f, 0.0f, 0.0f))
+				{
+					CanMantle = false;
+				}
+				else
+				{
+					FVector EndVectorForSphere4 = MantlePosition2 + (0.0f, 0.0f, 100.0f);
+					FVector MakeVectorMantle1(MantlePosition1.X, MantlePosition1.Y, EndVectorForSphere4.Z);
+
+					TArray<AActor*> ActorsArray4;
+					FHitResult OutHit4;
+					/*
+						Do a final trace to check if the path from the first and second mantle position is clear.
+					*/
+					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), MakeVectorMantle1, EndVectorForSphere4, 20.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::ForDuration, OutHit4, true);
+
+					if (bSphereHit3)
+					{
+						CanMantle = false;
+						// return mantle1Pos and mantle2Pos
+					}
+					else
+					{
+						// return mantle1Pos and mantle2Pos
+					}
+				}
+			}
+			else
+			{
+				MantlePosition2 = (GetActorForwardVector() * 50.0f) + OutHit2.ImpactPoint;
+
+				if (MantlePosition1 == FVector(0.0f, 0.0f, 0.0f) || MantlePosition2 == FVector(0.0f, 0.0f, 0.0f))
+				{
+					CanMantle = false;
+				}
+				else
+				{
+					FVector EndVectorForSphere5 = MantlePosition2 + (0.0f, 0.0f, 100.0f);
+					FVector MakeVectorMantle1_2(MantlePosition1.X, MantlePosition1.Y, EndVectorForSphere5.Z);
+
+					TArray<AActor*> ActorsArray4;
+					FHitResult OutHit4;
+					/*
+						Do a final trace to check if the path from the first and second mantle position is clear.
+					*/
+					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), MakeVectorMantle1_2, EndVectorForSphere5, 20.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::ForDuration, OutHit4, true);
+
+					if (bSphereHit3)
+					{
+						CanMantle = false;
+						// return mantle1Pos and mantle2Pos
+					}
+					else
+					{
+						// return mantle1Pos and mantle2Pos
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		CanMantle = false;
+
+	}
+}
