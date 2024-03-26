@@ -178,8 +178,8 @@ void Aparkour_GP4Character::Slide()
 			FVector StartPoint(55.0f, -70.0f, -71.0f);  // this doesn't work lol
 			MeshP->SetRelativeLocation(StartPoint);
 
-			FRotator StartRot(30.0f, 40.0f, 360.0f);
-			MeshP->SetRelativeRotation(StartRot);
+			//FRotator StartRot(30.0f, 40.0f, 360.0f);
+			//MeshP->SetRelativeRotation(StartRot);
 
 			UE_LOG(LogTemp, Warning, TEXT("1Before.... GetCharacterMovement()->IsCrouching() is Working!!!"))
 
