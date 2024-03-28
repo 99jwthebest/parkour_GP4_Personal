@@ -133,10 +133,7 @@ public:
 		bool IsSliding;
 	UPROPERTY(EditAnywhere, Category = Movement)
 		FTimerHandle SlideTraceHandle;
-	UPROPERTY(BlueprintReadWrite, Category = Movement)
-		FVector DefaultMeshLocation;
-	UPROPERTY(BlueprintReadWrite, Category = Movement)
-		FRotator DefaultMeshRotation;
+	
 	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector CurrentSlidingVelocity;
 	UPROPERTY(EditAnywhere, Category = Movement)

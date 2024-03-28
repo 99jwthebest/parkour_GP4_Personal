@@ -59,8 +59,6 @@ Aparkour_GP4Character::Aparkour_GP4Character()
 	MeshP = GetMesh();
 	IsSliding = false;
 	SpeedToStopSliding = 50.0f;
-	DefaultMeshLocation = FVector(0.0f, 0.0f, -90.0f);
-	DefaultMeshRotation = FRotator(0.0f, 0.0f, 270.0f);
 
 	//// Create Motion Warping Component
 	//PMotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
@@ -175,8 +173,8 @@ void Aparkour_GP4Character::Slide()
 			/*GetCapsuleComponent()->SetCapsuleHalfHeight();
 				GetCapsuleComponent()->SetCapsuleRadius();*/
 
-			FVector StartPoint(55.0f, -70.0f, -71.0f);  // this doesn't work lol
-			MeshP->SetRelativeLocation(StartPoint);
+			//FVector StartPoint(55.0f, -70.0f, -71.0f);  // this doesn't work lol
+			//MeshP->SetRelativeLocation(StartPoint);
 
 			//FRotator StartRot(30.0f, 40.0f, 360.0f);
 			//MeshP->SetRelativeRotation(StartRot);
@@ -189,8 +187,8 @@ void Aparkour_GP4Character::Slide()
 
 				GetCharacterMovement()->UnCrouch();
 
-				MeshP->SetRelativeLocation(DefaultMeshLocation);
-				MeshP->SetRelativeRotation(DefaultMeshRotation);
+				/*MeshP->SetRelativeLocation(DefaultMeshLocation);
+				MeshP->SetRelativeRotation(DefaultMeshRotation);*/
 
 				/*
 				FVector StartPoint(0.0f, 0.0f, -90.0f);
