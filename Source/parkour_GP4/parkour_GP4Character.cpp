@@ -89,11 +89,12 @@ void Aparkour_GP4Character::SetupPlayerInputComponent(UInputComponent* PlayerInp
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		/*EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);*/
 
 		// Vault Jumping
 		//EnhancedInputComponent->BindAction(VaultJumpAction, ETriggerEvent::Started, this, &Aparkour_GP4Character::Vaulting);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &Aparkour_GP4Character::Vaulting);
 
 		// Sliding
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Started, this, &Aparkour_GP4Character::Slide);
@@ -357,6 +358,8 @@ void Aparkour_GP4Character::CheckShouldContinueSliding()
 
 	if (IsSliding)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("18CheckShouldContinueSliding... IsSliding True!!!"))
+
 		if (IsSlopeUp())
 		{
 			GetCharacterMovement()->Velocity = CurrentSlidingVelocity;
@@ -413,7 +416,7 @@ void Aparkour_GP4Character::PlayGettingUpEvent()
 
 	MeshP->GetAnimInstance()->Montage_Play(SlidingEndMontage); // playGettingup montage event
 	FLatentActionInfo FLatentInfo;
-	UKismetSystemLibrary::RetriggerableDelay(GetWorld(), 0.02f, FLatentInfo); // might not work
+	UKismetSystemLibrary::RetriggerableDelay(GetWorld(), 0.05f, FLatentInfo); // might not work
 
 	if (SlideTraceHandle.IsValid())
 	{
@@ -477,6 +480,28 @@ void Aparkour_GP4Character::ResetXYRotation()
 	GetCharacterMovement()->MaxAcceleration = 1500.0f; // for how slow or fast the player speeds up.
 }
 
+/*
+* Check If Ceiling is above player before trying to get up when slide ends.
+*/
+void Aparkour_GP4Character::TraceForCeiling()
+{
+	FVector TraceVector = GetActorLocation() + (0.0f, 0.0f, 70.0f);
+
+	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_Visibility); // Trace channel to use
+
+	TArray<AActor*> ActorsArray;
+	//ActorsArray.Add(GetCharacterMovement()->CurrentFloor.HitResult.GetActor());
+	FHitResult OutHit; //Trace Ceiling? Video 39:02 to uncrouch automatically
+
+	bool bCapsuleHit = UKismetSystemLibrary::CapsuleTraceSingle(GetWorld(), TraceVector, TraceVector, 34.0f, 50.0f, TraceChannel, false, ActorsArray, EDrawDebugTrace::ForDuration, OutHit, true);
+
+	if (bCapsuleHit)
+	{
+		GetCharacterMovement()->Crouch();
+		MeshP->GetAnimInstance()->Montage_Stop(0.2f);
+	}
+}
+
 
 #pragma endregion
 
@@ -528,12 +553,12 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 
 			VaultDistance++;
 			FVector MultiVector = GetActorForwardVector() * i * SecondaryTraceGap;
-			FVector HitLocation = OutHit.Location + MultiVector;
-			FVector AddedVector = HitLocation + (0.0f, 0.0f, SecondaryTraceZOffset);
+			FVector EndHitLocation = OutHit.Location + MultiVector;
+			FVector AddedVector = EndHitLocation + (0.0f, 0.0f, SecondaryTraceZOffset);
 			TArray<AActor*> ActorsArray2;
 			FHitResult OutHit2;
 
-			bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddedVector, HitLocation, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::ForDuration, OutHit2, true);
+			bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddedVector, EndHitLocation, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::ForDuration, OutHit2, true);
 
 			if (bSphereHit)
 			{
@@ -552,7 +577,7 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 					if (bSphereHit2)
 					{
 						CanVault = false;
-						break;
+						break;  // Not sure if Breaks For Loop or just statement
 					}
 				}
 				else
@@ -563,7 +588,6 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 					*/
 
 					VaultMiddleLocation = OutHit2.ImpactPoint;
-					FVector AddToVaultStartVector = VaultStartLocation + (0.0f, 0.0f, 20.0f);
 					TArray<AActor*> ActorsArray4;
 					FHitResult OutHit4;
 
@@ -607,7 +631,7 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 
 				}
 
-				break;
+				break;  // not sure if break out of for Loop and If this is correct or not. might not work.
 			}
 		}
 	}
@@ -616,8 +640,10 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 void Aparkour_GP4Character::Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance)
 {
 	CanVault = false;
-
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
+
+	//MeshP->GetAnimInstance()->Montage_Play();
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 
 }
 

@@ -90,15 +90,18 @@ protected:
 	void PlayGettingUpEvent();
 	void ContinueSliding();
 	void ResetXYRotation();
-
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void TraceForCeiling();
 
 	/******   *******
 	**   Vaulting   **
 	******   *******/
-	void Vaulting();
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void Vaulting();
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void VaultTrace(float InitialTraceLength, float SecondaryTraceZOffset, float SecondaryTraceGap, float LandingPositionForwardOffset);
-	void Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance);
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance);
 
 
 	/******   *******
@@ -146,11 +149,11 @@ public:
 
 	// Vaulting
 
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector VaultStartLocation;
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector VaultMiddleLocation;
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector VaultLandLocation;
 	UPROPERTY(EditAnywhere, Category = Movement)
 		int VaultDistance;
