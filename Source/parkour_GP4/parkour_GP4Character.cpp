@@ -508,18 +508,13 @@ void Aparkour_GP4Character::TraceForCeiling()
 
 #pragma region Vaulting
 
-void Aparkour_GP4Character::Vaulting()
+bool Aparkour_GP4Character::Vaulting()
 {
 	if (UKismetMathLibrary::VSize(GetCharacterMovement()->Velocity) > 450.0f && !GetCharacterMovement()->IsFalling())
 	{
-		VaultTrace(380.0f, 100.0f, 45.0f, 100.0f);
-
-		if (CanVault)
-		{
-			Vault(VaultStartLocation, VaultMiddleLocation, VaultLandLocation, VaultDistance);
-		}
+		return true;
 	}
-
+	return false;
 }
 
 void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float SecondaryTraceZOffset, float SecondaryTraceGap, float LandingPositionForwardOffset)
@@ -637,15 +632,6 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 	}
 }
 
-void Aparkour_GP4Character::Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance)
-{
-	CanVault = false;
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Flying);
-
-	//MeshP->GetAnimInstance()->Montage_Play();
-	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
-
-}
 
 #pragma endregion
 

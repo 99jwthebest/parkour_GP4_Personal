@@ -97,17 +97,16 @@ protected:
 	**   Vaulting   **
 	******   *******/
 	UFUNCTION(BlueprintCallable, Category = "Movement")
-		void Vaulting();
+		bool Vaulting();
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void VaultTrace(float InitialTraceLength, float SecondaryTraceZOffset, float SecondaryTraceGap, float LandingPositionForwardOffset);
-	UFUNCTION(BlueprintCallable, Category = "Movement")
-		void Vault(FVector InputVaultStartLocation, FVector InputVaultMiddleLocation, FVector InputVaultLandLocation, int InputVaultDistance);
 
 
 	/******   *******
 	**   Mantling   **
 	******   *******/
-	void MantleTrace(float InitialTraceLength, float SecondaryTraceZOffset, float FallingHeightMultiplier);
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void MantleTrace(float InitialTraceLength, float SecondaryTraceZOffset, float FallingHeightMultiplier);
 
 protected:
 	// APawn interface
@@ -155,19 +154,19 @@ public:
 		FVector VaultMiddleLocation;
 	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector VaultLandLocation;
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		int VaultDistance;
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		bool CanVault;
 
 
 	// Mantling
 
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector MantlePosition1;
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		FVector MantlePosition2;
-	UPROPERTY(EditAnywhere, Category = Movement)
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		bool CanMantle;
 };
 
