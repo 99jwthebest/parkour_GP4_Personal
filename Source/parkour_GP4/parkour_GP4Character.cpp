@@ -23,7 +23,7 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 Aparkour_GP4Character::Aparkour_GP4Character()
 {
 	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	//GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 		
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -171,6 +171,8 @@ void Aparkour_GP4Character::Slide()
 			MeshP->GetAnimInstance()->Montage_Play(SlidingMontage);
 
 			GetCharacterMovement()->Crouch();
+			//GetCapsuleComponent()->SetCapsuleHalfHeight(40.0f);
+
 			/*GetCapsuleComponent()->SetCapsuleHalfHeight();
 				GetCapsuleComponent()->SetCapsuleRadius();*/
 
@@ -197,7 +199,8 @@ void Aparkour_GP4Character::Slide()
 				FVector InterpVector = FMath::VInterpTo(StartPoint, EndPoint, GetWorld()->GetDeltaSeconds(), 5.0f);*/
 
 				//MeshP->SetRelativeLocation(InterpVector);
-				/*GetCapsuleComponent()->SetCapsuleHalfHeight();
+				/*
+				GetCapsuleComponent()->SetCapsuleHalfHeight();
 				GetCapsuleComponent()->SetCapsuleRadius();
 				*/
 			}
@@ -360,7 +363,7 @@ void Aparkour_GP4Character::CheckShouldContinueSliding()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("18CheckShouldContinueSliding... IsSliding True!!!"))
 
-		if (IsSlopeUp())
+		if (IsSlopeUp())  // not returning true, does not work. 
 		{
 			GetCharacterMovement()->Velocity = CurrentSlidingVelocity;
 			GetWorld()->GetTimerManager().SetTimer(ContinueSlidingHandle, this, &Aparkour_GP4Character::ContinueSliding, 0.001f, true);
@@ -549,7 +552,8 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 			VaultDistance++;
 			FVector MultiVector = GetActorForwardVector() * i * SecondaryTraceGap;
 			FVector EndHitLocation = OutHit.Location + MultiVector;
-			FVector AddedVector = EndHitLocation + (0.0f, 0.0f, SecondaryTraceZOffset);
+			FVector AddedVector = EndHitLocation;
+			AddedVector.Z += SecondaryTraceZOffset;
 			TArray<AActor*> ActorsArray2;
 			FHitResult OutHit2;
 
@@ -564,7 +568,9 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 					*/
 
 					VaultStartLocation = OutHit2.ImpactPoint;
-					FVector AddToVaultStartVector = VaultStartLocation + (0.0f, 0.0f, 20.0f);
+					FVector AddToVaultStartVector = VaultStartLocation;
+					AddToVaultStartVector.Z += 20.0f;
+
 					TArray<AActor*> ActorsArray3;
 					FHitResult OutHit3;
 
@@ -608,7 +614,8 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 
 				FVector StartTraceEndAddVector = OutHit2.TraceEnd + MultiplyForwardVector;
 
-				FVector EndTraceEndAddVector = StartTraceEndAddVector - (0.0f, 0.0f, 100.0f);
+				FVector EndTraceEndAddVector = StartTraceEndAddVector;
+				EndTraceEndAddVector.Z -= 100.0f;
 
 				bool bSingleHit4 = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartTraceEndAddVector, EndTraceEndAddVector, TraceChannel, false, ActorsArray5, EDrawDebugTrace::ForDuration, OutHit5, true);
 
@@ -664,7 +671,7 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 		float SelectedFloat = UKismetMathLibrary::SelectFloat(FallingHeightMultiplier, 1.0f, GetCharacterMovement()->IsFalling());
 		float Multiplingfloat = SecondaryTraceZOffset * SelectedFloat;
 		FVector StartVectorForSphere = OutHit.Location;
-		StartVectorForSphere.Z = Multiplingfloat;
+		StartVectorForSphere.Z += Multiplingfloat;
 
 		TArray<AActor*> ActorsArray2;
 		FHitResult OutHit2;
