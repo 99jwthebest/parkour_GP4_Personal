@@ -663,7 +663,8 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 
 		float SelectedFloat = UKismetMathLibrary::SelectFloat(FallingHeightMultiplier, 1.0f, GetCharacterMovement()->IsFalling());
 		float Multiplingfloat = SecondaryTraceZOffset * SelectedFloat;
-		FVector StartVectorForSphere = OutHit.Location + (0.0f, 0.0f, Multiplingfloat);
+		FVector StartVectorForSphere = OutHit.Location;
+		StartVectorForSphere.Z = Multiplingfloat;
 
 		TArray<AActor*> ActorsArray2;
 		FHitResult OutHit2;
