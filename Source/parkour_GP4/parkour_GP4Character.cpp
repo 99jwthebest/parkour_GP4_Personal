@@ -524,6 +524,7 @@ bool Aparkour_GP4Character::Vaulting()
 	return false;
 }
 
+
 void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float SecondaryTraceZOffset, float SecondaryTraceGap, float LandingPositionForwardOffset)
 {
 
@@ -542,7 +543,7 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_Visibility); // Trace channel to use
 	TArray<AActor*> ActorsArray;
 	//EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForDuration;
-	bool bSingleHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartVector, EndVector, TraceChannel, false, ActorsArray, EDrawDebugTrace::ForDuration, OutHit, true);
+	bool bSingleHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartVector, EndVector, TraceChannel, false, ActorsArray, EDrawDebugTrace::None, OutHit, true);
 
 	if (bSingleHit)
 	{
@@ -561,7 +562,7 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 			TArray<AActor*> ActorsArray2;
 			FHitResult OutHit2;
 
-			bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddedVector, EndHitLocation, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::ForDuration, OutHit2, true);
+			bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddedVector, EndHitLocation, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::None, OutHit2, true);
 
 			if (bSphereHit)
 			{
@@ -578,7 +579,7 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 					TArray<AActor*> ActorsArray3;
 					FHitResult OutHit3;
 
-					bool bSphereHit2 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddToVaultStartVector, AddToVaultStartVector, 10.0f, TraceChannel, false, ActorsArray3, EDrawDebugTrace::ForDuration, OutHit3, true, FLinearColor::Blue);
+					bool bSphereHit2 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), AddToVaultStartVector, AddToVaultStartVector, 10.0f, TraceChannel, false, ActorsArray3, EDrawDebugTrace::None, OutHit3, true, FLinearColor::Blue);
 					if (bSphereHit2)
 					{
 						CanVault = false;
@@ -596,7 +597,7 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 					TArray<AActor*> ActorsArray4;
 					FHitResult OutHit4;
 
-					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), OutHit2.TraceStart, OutHit2.TraceStart, 10.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::ForDuration, OutHit4, true, FLinearColor::Blue);
+					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), OutHit2.TraceStart, OutHit2.TraceStart, 10.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::None, OutHit4, true, FLinearColor::Blue);
 					if (bSphereHit3)
 					{
 						CanVault = false;
@@ -621,11 +622,11 @@ void Aparkour_GP4Character::VaultTrace(float InitialTraceLength, float Secondary
 				FVector EndTraceEndAddVector = StartTraceEndAddVector;
 				EndTraceEndAddVector.Z -= 100.0f;
 
-				bool bSingleHit4 = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartTraceEndAddVector, EndTraceEndAddVector, TraceChannel, false, ActorsArray5, EDrawDebugTrace::ForDuration, OutHit5, true);
+				bool bSingleHit4 = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartTraceEndAddVector, EndTraceEndAddVector, TraceChannel, false, ActorsArray5, EDrawDebugTrace::None, OutHit5, true);
 
 				TArray<AActor*> ActorsArray6;
 				FHitResult OutHit6;
-				bool bSphereHit5 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), StartTraceEndAddVector, StartTraceEndAddVector, 20.0f, TraceChannel, false, ActorsArray6, EDrawDebugTrace::ForDuration, OutHit6, true, FLinearColor::Blue);
+				bool bSphereHit5 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), StartTraceEndAddVector, StartTraceEndAddVector, 20.0f, TraceChannel, false, ActorsArray6, EDrawDebugTrace::None, OutHit6, true, FLinearColor::Blue);
 
 				if (bSphereHit5)
 				{
@@ -664,7 +665,7 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_Visibility); // Trace channel to use
 	TArray<AActor*> ActorsArray;
 	//EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForDuration;
-	bool bSingleHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartVector, EndVector, TraceChannel, false, ActorsArray, EDrawDebugTrace::ForDuration, OutHit, true);
+	bool bSingleHit = UKismetSystemLibrary::LineTraceSingle(GetWorld(), StartVector, EndVector, TraceChannel, false, ActorsArray, EDrawDebugTrace::None, OutHit, true);
 
 	if (bSingleHit)
 	{
@@ -680,7 +681,7 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 		TArray<AActor*> ActorsArray2;
 		FHitResult OutHit2;
 
-		bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), StartVectorForSphere, OutHit.Location, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::ForDuration, OutHit2, true);
+		bool bSphereHit = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), StartVectorForSphere, OutHit.Location, 10.0f, TraceChannel, false, ActorsArray2, EDrawDebugTrace::None, OutHit2, true);
 		if (bSphereHit)
 		{
 
@@ -693,14 +694,15 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 
 			CanMantle = true;
 
-			FVector VectorForSphereTrace = MantlePosition2 + (0.0f, 0.0f, 20.0f);
+			FVector VectorForSphereTrace = MantlePosition2;
+			VectorForSphereTrace.Z += 20.0f;
 			TArray<AActor*> ActorsArray3;
 			FHitResult OutHit3;
 
 			/*
 				Do a sphere trace to check if the player has enough space to land at the target location once mantled. This deduces the second motion warp location.
 			*/
-			bool bSphereHit2 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), VectorForSphereTrace, VectorForSphereTrace, 10.0f, TraceChannel, false, ActorsArray3, EDrawDebugTrace::ForDuration, OutHit3, true);
+			bool bSphereHit2 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), VectorForSphereTrace, VectorForSphereTrace, 10.0f, TraceChannel, false, ActorsArray3, EDrawDebugTrace::None, OutHit3, true);
 			if (bSphereHit2)
 			{
 				CanMantle = false;
@@ -711,7 +713,8 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 				}
 				else
 				{
-					FVector EndVectorForSphere4 = MantlePosition2 + (0.0f, 0.0f, 100.0f);
+					FVector EndVectorForSphere4 = MantlePosition2;
+					EndVectorForSphere4.Z += 100.0f;
 					FVector MakeVectorMantle1(MantlePosition1.X, MantlePosition1.Y, EndVectorForSphere4.Z);
 
 					TArray<AActor*> ActorsArray4;
@@ -719,7 +722,7 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 					/*
 						Do a final trace to check if the path from the first and second mantle position is clear.
 					*/
-					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), MakeVectorMantle1, EndVectorForSphere4, 20.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::ForDuration, OutHit4, true);
+					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), MakeVectorMantle1, EndVectorForSphere4, 20.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::None, OutHit4, true);
 
 					if (bSphereHit3)
 					{
@@ -742,7 +745,8 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 				}
 				else
 				{
-					FVector EndVectorForSphere5 = MantlePosition2 + (0.0f, 0.0f, 100.0f);
+					FVector EndVectorForSphere5 = MantlePosition2;
+					EndVectorForSphere5.Z += 100.0f;
 					FVector MakeVectorMantle1_2(MantlePosition1.X, MantlePosition1.Y, EndVectorForSphere5.Z);
 
 					TArray<AActor*> ActorsArray4;
@@ -750,7 +754,7 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 					/*
 						Do a final trace to check if the path from the first and second mantle position is clear.
 					*/
-					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), MakeVectorMantle1_2, EndVectorForSphere5, 20.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::ForDuration, OutHit4, true);
+					bool bSphereHit3 = UKismetSystemLibrary::SphereTraceSingle(GetWorld(), MakeVectorMantle1_2, EndVectorForSphere5, 20.0f, TraceChannel, false, ActorsArray4, EDrawDebugTrace::None, OutHit4, true);
 
 					if (bSphereHit3)
 					{
