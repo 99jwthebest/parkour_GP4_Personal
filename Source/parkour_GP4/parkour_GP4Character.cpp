@@ -59,6 +59,8 @@ Aparkour_GP4Character::Aparkour_GP4Character()
 	MeshP = GetMesh();
 	IsSliding = false;
 	SpeedToStopSliding = 50.0f;
+	SprintSpeed = 700.0f;
+	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
 	//// Create Motion Warping Component
 	//PMotionWarpingComponent = CreateDefaultSubobject<UMotionWarpingComponent>(TEXT("MotionWarping"));
@@ -82,6 +84,7 @@ void Aparkour_GP4Character::BeginPlay()
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+
 
 void Aparkour_GP4Character::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -767,3 +770,52 @@ void Aparkour_GP4Character::MantleTrace(float InitialTraceLength, float Secondar
 
 	}
 }
+
+
+
+
+void Aparkour_GP4Character::StartSprinting()
+{
+	IsSprinting = true;
+	GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+
+}
+
+void Aparkour_GP4Character::CompletedSprinting()
+{
+	GetCharacterMovement()->MaxWalkSpeed = DefaultWalkSpeed;
+}
+
+bool Aparkour_GP4Character::TriggeredSprinting()
+{
+	if (UKismetMathLibrary::VSizeXY(GetCharacterMovement()->Velocity) > 10.0f 
+		&& GetCharacterMovement()->GetCurrentAcceleration() != FVector(0.0f, 0.0f, 0.0f))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+/// <summary>
+/// Play run stop montage by checking first if player was sprinting for long enough and then stopped sprinting.
+/// Player also has to have been moving above a certain speed so the run stop only plays if enough velocity was actually reached for this animation to be needed to play.
+/// </summary>
+void Aparkour_GP4Character::AfterCompletedSprinting()
+{
+	if (GetCharacterMovement()->IsFalling())
+	{
+
+	}
+	else if(IsSprinting)
+	{
+		if (UKismetMathLibrary::VSize(GetCharacterMovement()->GetLastUpdateVelocity()) > 50.0f)
+		{
+
+			IsSprinting = false;
+			MeshP->GetAnimInstance()->Montage_Play(RunToStopMontage);
+		}
+	}
+}
+
+

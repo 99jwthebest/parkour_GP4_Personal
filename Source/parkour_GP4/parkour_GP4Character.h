@@ -49,9 +49,9 @@ class Aparkour_GP4Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		UInputAction* SlideAction;
 
-	/** VaultJump Input Action */
+	/** Sprint Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-		UInputAction* VaultJumpAction;
+		UInputAction* SprintAction;
 
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -107,6 +107,20 @@ protected:
 	******   *******/
 	UFUNCTION(BlueprintCallable, Category = "Movement")
 		void MantleTrace(float InitialTraceLength, float SecondaryTraceZOffset, float FallingHeightMultiplier);
+
+
+	/******   *******
+	**   Sprinting   **
+	******   *******/
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void StartSprinting();
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void CompletedSprinting();
+	UFUNCTION(BlueprintPure, Category = "Movement")
+		bool TriggeredSprinting();
+	UFUNCTION(BlueprintCallable, Category = "Movement")
+		void AfterCompletedSprinting();
+
 
 protected:
 	// APawn interface
@@ -168,5 +182,17 @@ public:
 		FVector MantlePosition2;
 	UPROPERTY(BlueprintReadWrite, Category = Movement)
 		bool CanMantle;
+
+	// Sprinting
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
+		bool IsSprinting;
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
+		float SprintSpeed;
+	UPROPERTY(BlueprintReadWrite, Category = Movement)
+		float DefaultWalkSpeed;
+	UPROPERTY(EditAnywhere, Category = Movement)
+		bool DoOnceNodeBool;
+	UPROPERTY(EditAnywhere, Category = Animation)
+		UAnimMontage* RunToStopMontage;
 };
 
