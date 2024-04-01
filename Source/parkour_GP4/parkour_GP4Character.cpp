@@ -59,7 +59,7 @@ Aparkour_GP4Character::Aparkour_GP4Character()
 	MeshP = GetMesh();
 	IsSliding = false;
 	SpeedToStopSliding = 50.0f;
-	SprintSpeed = 700.0f;
+	SprintSpeed = 800.0f;
 	DefaultWalkSpeed = GetCharacterMovement()->MaxWalkSpeed;
 
 	//// Create Motion Warping Component
@@ -491,7 +491,8 @@ void Aparkour_GP4Character::ResetXYRotation()
 */
 void Aparkour_GP4Character::TraceForCeiling()
 {
-	FVector TraceVector = GetActorLocation() + (0.0f, 0.0f, 70.0f);
+	FVector TraceVector = GetActorLocation();
+	TraceVector.Z += 70.0f;
 
 	ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECC_Visibility); // Trace channel to use
 
